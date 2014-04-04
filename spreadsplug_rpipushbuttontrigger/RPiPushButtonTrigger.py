@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+
+# Originally written by jbaiter (github.com/jbaiter)
+# Packaged, modifed by:
+# Matti Kariluoma Apr 2014 <matti@kariluo.ma>
+#
+# Inspiration:
+# https://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/robot/buttons_and_switches/
+
 import logging
 
 from spreads.plugin import PluginOption, HookPlugin, TriggerHooksMixin
