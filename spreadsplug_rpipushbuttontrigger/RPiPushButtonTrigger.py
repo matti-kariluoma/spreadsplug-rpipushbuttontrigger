@@ -8,6 +8,9 @@
 # https://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/robot/buttons_and_switches/
 
 import logging
+import threading
+
+import RPi.GPIO as GPIO
 
 from spreads.plugin import PluginOption, HookPlugin, TriggerHooksMixin
 
@@ -15,6 +18,10 @@ class RPiPushButtonTrigger(HookPlugin, TriggerHooksMixin):
 	""" Plugin for RPiPushButtonTrigger
 
 	"""
+
+	__name__ = 'RPiPushButtonTrigger'
+	_loop_thread = None
+	_exit_event = None
 
 	@classmethod
 	def configuration_template(cls):
@@ -25,15 +32,15 @@ class RPiPushButtonTrigger(HookPlugin, TriggerHooksMixin):
 
 		Example::
 
-		  {
-		   'a_setting': PluginOption(value='default_value'),
-		   'another_setting': PluginOption(value=[1, 2, 3],
-										   docstring="A list of things"),
-		   # In this case, 'full-fat' would be the default value
-		   'milk': PluginOption(value=('full-fat', 'skim'),
+			{
+			 'a_setting': PluginOption(value='default_value'),
+			 'another_setting': PluginOption(value=[1, 2, 3],
+											 docstring="A list of things"),
+			 # In this case, 'full-fat' would be the default value
+			 'milk': PluginOption(value=('full-fat', 'skim'),
 								docstring="Type of milk",
 								selectable=True),
-		  }
+			}
 
 		:return: dict with unicode: PluginOption(value, docstring, selection)
 		"""
@@ -43,7 +50,7 @@ class RPiPushButtonTrigger(HookPlugin, TriggerHooksMixin):
 	def __init__(self, config):
 		self._logger = logging.getLogger('spreadsplug.RPiPushButtonTrigger')
 		self._logger.debug("Initializing RPiPushButtonTrigger")
-		self._trigger_pin = config['RPiPushButtonTrigger']['pin_number'].get(int)
+		self._trigger_pin = config[self.__name__]['pin_number'].get(int)
 
 	def start_trigger_loop(self, capture_callback):
 		""" Start a thread that runs an event loop and periodically triggers
@@ -55,7 +62,7 @@ class RPiPushButtonTrigger(HookPlugin, TriggerHooksMixin):
 
 		"""
 		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(buttonPin,GPIO.IN)
+		GPIO.setup(self._trigger_pin, GPIO.IN)
 
 		self._exit_event = threading.Event()
 		self._loop_thread = threading.Thread(target=self._trigger_loop,
